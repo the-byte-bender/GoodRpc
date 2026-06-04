@@ -1,0 +1,18 @@
+<Project>
+  <PropertyGroup>
+    <Authors>The Byte Bender</Authors>
+    <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/the-byte-bender/GoodRpc</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/the-byte-bender/GoodRpc.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>RPC;AOT;SourceGenerator;MemoryPack;zero-reflection</PackageTags>
+
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)LICENSE" Pack="true" PackagePath="\" />
+  </ItemGroup>
+</Project>

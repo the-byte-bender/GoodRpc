@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>GoodRpc.Transports.Tcp</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Version>0.1.0</Version>
+    <Description>TCP transport for GoodRpc — length-prefixed framing over TCP.</Description>
+    <PackageTags>RPC;AOT;TCP;transport;GoodRpc</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GoodRpc\GoodRpc.csproj" />
+  </ItemGroup>
+</Project>
