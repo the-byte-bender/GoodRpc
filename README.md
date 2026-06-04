@@ -9,7 +9,7 @@ Please note that we're still in pre-stable 0.x versions, so bugs might exist, pe
 - Source-generated proxies and dispatchers for your interfaces with zero reflection or dynamic invocation.
 - Pluggable transports. Your rpc works the same way whether it's in-process, over TCP, or something else entirely. You can build your own transport, too!
 - Abstractions that allow the same code to work and take advantage of any topology: client-server, server-clients, peer-to-peer, peer-to-peer mesh, etc. Note that the transport must support the topology you want to use, the abstractions just allow your handlers and callers to be agnostic.
-- Supports return types of void, ValueTask, Task, ValueTask<T>, and Task<T>, with any amount of parameters. (IAsyncEnumerable<T> return type coming soon!)
+- Supports return types of `void`, `ValueTask`, `Task`, `ValueTask<T>`, and `Task<T>`, with any amount of parameters. (IAsyncEnumerable<T> return type coming soon!)
 - Cancellation token support that passes through the wire to the handler for canceling calls in-flight, automatically detected and synchronized if the last parameter of the method is a CancellationToken.
 - Metadata attributes that let you configure timeouts, delivery guarantees, and more on a per-method basis that fall back to safe defaults if the transport doesn't support them.
 - Ambient context that flows with the call that provide the callers peer id and other information so your handler can safely know who called it.
