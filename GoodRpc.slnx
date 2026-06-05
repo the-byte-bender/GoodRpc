@@ -1,6 +1,5 @@
 <Solution>
   <Project Path="GoodRpc.SourceGen/GoodRpc.SourceGen.csproj" />
   <Project Path="GoodRpc.Tests/GoodRpc.Tests.csproj" />
-  <Project Path="GoodRpc.Transports.Tcp/GoodRpc.Transports.Tcp.csproj" />
   <Project Path="GoodRpc/GoodRpc.csproj" />
 </Solution>
