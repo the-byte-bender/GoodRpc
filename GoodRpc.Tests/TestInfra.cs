@@ -202,12 +202,6 @@ public sealed class LoopbackTransport : RpcTransport
         return ValueTask.CompletedTask;
     }
 
-    public override ValueTask DisposeAsync()
-    {
-        OnPeerDisconnected(RemotePeer);
-        return ValueTask.CompletedTask;
-    }
-
     public static (LoopbackTransport A, LoopbackTransport B) CreatePair()
     {
         var a = new LoopbackTransport(new PeerId(2));

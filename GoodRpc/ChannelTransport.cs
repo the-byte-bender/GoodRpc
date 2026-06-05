@@ -18,7 +18,6 @@ public sealed class ChannelTransport : RpcTransport
     );
 
     private int _started;
-    private int _disposed;
 
     internal readonly record struct RawEnvelope(
         ReadOnlyMemory<byte> Payload,
@@ -50,7 +49,7 @@ public sealed class ChannelTransport : RpcTransport
             throw new InvalidOperationException("The transport has already been started.");
         }
 
-        if (Volatile.Read(ref _disposed) != 0)
+        if (IsDisposed)
         {
             _loopCompletion.TrySetResult();
             throw new ObjectDisposedException(nameof(ChannelTransport));
@@ -79,10 +78,8 @@ public sealed class ChannelTransport : RpcTransport
         CancellationToken ct = default
     )
     {
-        if (Volatile.Read(ref _disposed) != 0)
-        {
-            throw new ObjectDisposedException(nameof(ChannelTransport));
-        }
+        if (IsDisposed)
+            return ValueTask.CompletedTask;
 
         var copy = message.ToArray();
         var context = new RpcReceiveContext(options.Channel, options.Delivery);
@@ -92,7 +89,7 @@ public sealed class ChannelTransport : RpcTransport
 
     public override ValueTask DisconnectAsync(PeerId peer, CancellationToken ct = default)
     {
-        if (Volatile.Read(ref _disposed) == 0)
+        if (!IsDisposed)
         {
             try
             {
@@ -103,18 +100,9 @@ public sealed class ChannelTransport : RpcTransport
         return ValueTask.CompletedTask;
     }
 
-    public override async ValueTask DisposeAsync()
+    protected override async ValueTask DisposeAsyncCore()
     {
-        if (Interlocked.Exchange(ref _disposed, 1) != 0)
-        {
-            return;
-        }
-
-        try
-        {
-            _cts.Cancel();
-        }
-        catch (ObjectDisposedException) { }
+        _cts.Cancel();
 
         _sender.Writer.TryComplete();
 

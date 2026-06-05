@@ -7,13 +7,30 @@ public abstract class RpcTransport : IAsyncDisposable
 {
     private readonly Dictionary<PeerId, List<Action<RpcMessage>>> _perPeer = new();
     private readonly List<Action<RpcMessage>> _global = new();
+    private int _disposed;
 
     public event Action<PeerId>? Connected;
     public event Action<PeerId>? Disconnected;
 
     /// <summary>
+    /// Whether the transport has been disposed.
+    /// </summary>
+    public bool IsDisposed => Volatile.Read(ref _disposed) != 0;
+
+    /// <summary>
     /// Send a message to a specific peer.
     /// </summary>
+    /// <remarks>
+    /// this method must never throw synchronously, even when the transport is disposed or the peer is unknown.
+    ///
+    /// <para>Think of <c>SendAsync</c> as "try to enqueue; best effort."
+    /// It is NOT a delivery guarantee.  Delivery is guaranteed (or not) by the
+    /// <see cref="RpcSendOptions.Delivery"/> field observed by the receiver,
+    /// not by the send path.</para>
+    ///
+    /// <para>If the underlying I/O fails asynchronously, return a faulted
+    /// <see cref="ValueTask"/>, don't throw.</para>
+    /// </remarks>
     public abstract ValueTask SendAsync(
         PeerId peer,
         ReadOnlyMemory<byte> message,
@@ -28,8 +45,28 @@ public abstract class RpcTransport : IAsyncDisposable
 
     /// <summary>
     /// Shut down the transport completely.
+    /// Fires <see cref="Disconnected"/> for all remaining peers,
+    /// then clears all subscriptions and events.
     /// </summary>
-    public abstract ValueTask DisposeAsync();
+    public async ValueTask DisposeAsync()
+    {
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+            return;
+
+        foreach (var peer in _perPeer.Keys.ToArray())
+            OnPeerDisconnected(peer);
+
+        await DisposeAsyncCore();
+
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Transport-specific cleanup.  Called by <see cref="DisposeAsync"/>.
+    /// The base has already fired <see cref="Disconnected"/> for all peers.
+    /// </summary>
+    protected virtual ValueTask DisposeAsyncCore() => ValueTask.CompletedTask;
 
     /// <summary>
     /// Call when a message arrives from a peer. Routes to per-peer and global subscribers.
