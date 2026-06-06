@@ -1,5 +1,9 @@
 <Solution>
+  <Folder Name="/samples/">
+    <Project Path="samples/ChatDemo/ChatDemo.csproj" />
+  </Folder>
   <Project Path="GoodRpc.SourceGen/GoodRpc.SourceGen.csproj" />
   <Project Path="GoodRpc.Tests/GoodRpc.Tests.csproj" />
+  <Project Path="GoodRpc.Transports.LiteNetLib/GoodRpc.Transports.LiteNetLib.csproj" />
   <Project Path="GoodRpc/GoodRpc.csproj" />
 </Solution>
