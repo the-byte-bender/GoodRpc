@@ -18,6 +18,14 @@ public abstract class RpcDispatcherBase<TInterface> : IDisposable
     private readonly ConcurrentDictionary<(PeerId, int), CancellationTokenSource> _inFlight = new();
 
     /// <summary>
+    /// Fired when a handler method throws an exception.
+    /// Subscribe to this to log or monitor handler errors locally.
+    /// For security, the error detail is NOT sent to the caller; only
+    /// <see cref="RpcErrorCode.HandlerException"/> goes over the wire.
+    /// </summary>
+    public event Action<PeerId, ulong, Exception>? HandlerError;
+
+    /// <summary>
     /// The user-supplied handler implementation.
     /// </summary>
     protected TInterface Handler { get; }
@@ -171,7 +179,10 @@ public abstract class RpcDispatcherBase<TInterface> : IDisposable
                 {
                     DispatchNotification(msg.Peer, notifHash, notifPayload);
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    HandlerError?.Invoke(msg.Peer, notifHash, ex);
+                }
                 break;
 
             case 6: // cancellation
@@ -196,8 +207,9 @@ public abstract class RpcDispatcherBase<TInterface> : IDisposable
             await DispatchRequestAsync(peer, seq, hash, payload);
         }
         catch (OperationCanceledException) { }
-        catch (Exception)
+        catch (Exception ex)
         {
+            HandlerError?.Invoke(peer, hash, ex);
             try
             {
                 await SendErrorAsync(peer, seq, RpcErrorCode.HandlerException);

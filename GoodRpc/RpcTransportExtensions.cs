@@ -16,9 +16,10 @@ public static class RpcTransportExtensions
     /// Create a dispatcher that routes incoming messages to the given handler.
     /// The dispatcher immediately subscribes to the transport and is ready to use.
     /// </summary>
-    public static IDisposable CreateDispatcher<TInterface>(
+    public static RpcDispatcherBase<TInterface> CreateDispatcher<TInterface>(
         this RpcTransport transport,
         TInterface handler
     )
-        where TInterface : class => RpcRegistry.CreateDispatcher(transport, handler);
+        where TInterface : class
+        => (RpcDispatcherBase<TInterface>)RpcRegistry.CreateDispatcher(transport, handler);
 }

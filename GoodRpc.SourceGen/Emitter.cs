@@ -136,18 +136,8 @@ file sealed class {{pn}} : RpcProxyBase, {{iface}}
     )
     {
         var serialCount = m.ParamTypeFQNs.Length - (m.HasCancellationToken ? 1 : 0);
-        if (serialCount == 0)
-            return;
-        if (serialCount == 1)
-            AppendLine(sb, $"{indent}MemoryPackSerializer.Serialize({writerVar}, p0);");
-        else
-        {
-            var indices = m.HasCancellationToken
-                ? Enumerable.Range(0, m.ParamTypeFQNs.Length - 1)
-                : Enumerable.Range(0, m.ParamTypeFQNs.Length);
-            var tuple = string.Join(", ", indices.Select(x => $"p{x}"));
-            AppendLine(sb, $"{indent}MemoryPackSerializer.Serialize({writerVar}, ({tuple}));");
-        }
+        for (int i = 0; i < serialCount; i++)
+            AppendLine(sb, $"{indent}MemoryPackSerializer.Serialize({writerVar}, p{i});");
     }
 
     // ── Dispatcher ────────────────────────────────────────────
@@ -353,22 +343,20 @@ file sealed class {{dn}} : RpcDispatcherBase<{{iface}}>
         var serialCount = m.ParamTypeFQNs.Length - (m.HasCancellationToken ? 1 : 0);
         if (serialCount == 0)
             return;
+
         if (serialCount == 1)
         {
             AppendLine(
                 sb,
                 $"{indent}var p0 = MemoryPackSerializer.Deserialize<{m.ParamTypeFQNs[0]}>(payload.Span);"
             );
+            return;
         }
-        else
-        {
-            var types = string.Join(", ", m.ParamTypeFQNs.Take(serialCount));
-            var names = string.Join(", ", Enumerable.Range(0, serialCount).Select(x => $"p{x}"));
-            AppendLine(
-                sb,
-                $"{indent}var ({names}) = MemoryPackSerializer.Deserialize<({types})>(payload.Span);"
-            );
-        }
+
+        AppendLine(sb, $"{indent}using var _state = MemoryPackReaderOptionalStatePool.Rent(MemoryPackSerializerOptions.Default);");
+        AppendLine(sb, $"{indent}var _reader = new MemoryPackReader(payload.Span, _state);");
+        for (int i = 0; i < serialCount; i++)
+            AppendLine(sb, $"{indent}var p{i} = _reader.ReadValue<{m.ParamTypeFQNs[i]}>();");
     }
 
     static void AppendRegistration(StringBuilder sb, RpcInterfaceModel model)
