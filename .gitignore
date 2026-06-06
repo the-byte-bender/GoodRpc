@@ -57,3 +57,6 @@ TestResult.xml
 nunit-*.xml
 
 *.lscache
+
+# Local publish script (contains NuGet API key placeholder)
+publish.sh
